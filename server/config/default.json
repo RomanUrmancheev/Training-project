@@ -1,0 +1,4 @@
+{
+  "port": 8080,
+  "mongoUri": "mongodb+srv://Roman:1234@trainigprojectdb.ltthmwj.mongodb.net/?retryWrites=true&w=majority&appName=TrainigProjectDB"
+}
