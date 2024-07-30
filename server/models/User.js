@@ -10,7 +10,7 @@ const schema = new Schema(
     password: String,
     completedMeetings: Number,
     rate: Number,
-    sex: { type: String, enum: [male, female] },
+    sex: { type: String, enum: ["male", "female"] },
     profession: { type: Schema.Types.ObjectId, ref: "Profession" },
     qualities: { type: Schema.Types.ObjectId, ref: "Quality" },
   },
