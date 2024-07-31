@@ -7,7 +7,7 @@ class TokenService {
     const accessToken = jwt.sign(payload, config.get("tokenKey"), {
       expiresIn: "1h",
     });
-    const refreshToken = jwt.sign(payload, config.get("tokenKey"));
+    const refreshToken = jwt.sign(payload, config.get("refreshKey"));
     return { accessToken, refreshToken, expiresIn: 3600 };
   }
 
@@ -19,6 +19,22 @@ class TokenService {
     }
     const token = await Token.create({ user, refreshToken });
     return token;
+  }
+
+  validateRefresh(refreshToken) {
+    try {
+      return jwt.verify(refreshToken, config.get("refreshKey"));
+    } catch (error) {
+      return null;
+    }
+  }
+
+  async findToken(refreshToken) {
+    try {
+      return await Token.findOne({ refreshToken });
+    } catch (error) {
+      return null;
+    }
   }
 }
 
