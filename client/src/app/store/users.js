@@ -1,9 +1,8 @@
 /* eslint-disable indent */
-import { createAction, createSlice } from "@reduxjs/toolkit";
+import { createSlice } from "@reduxjs/toolkit";
 import userService from "../services/userService";
 import authService from "../services/authService";
 import localStorageService from "../services/localStorageService";
-import getRandomInt from "../utils/getRandomInt";
 import generateAuthError from "../services/generateAuthError";
 import history from "../utils/history";
 
@@ -81,9 +80,6 @@ const usersSlice = createSlice({
   }
 });
 
-const userCreateRequested = createAction("users/userCreateRequested");
-const userCreateFailed = createAction("users/userCreateFailed");
-
 const { reducer: usersReducer, actions } = usersSlice;
 const {
   usersRequested,
@@ -92,50 +88,28 @@ const {
   authRequested,
   authRequestFailed,
   authRequestSuccess,
-  userCreated,
   userLogedOut,
   updateRequested,
   updateRequestFailed,
   updateRequestSuccess
 } = actions;
 
-const createUser = (payload) => async (dispatch) => {
-  dispatch(userCreateRequested());
+export const signUp = (payload) => async (dispatch) => {
+  dispatch(authRequested());
   try {
-    const { content } = await userService.create(payload);
-    dispatch(userCreated(content));
+    const data = await authService.registration(payload);
+    localStorageService.setToken(data);
+    dispatch(authRequestSuccess({ userId: data.userId }));
     history.push("/users");
   } catch (error) {
-    dispatch(userCreateFailed(error.message));
+    const { code, message } = error.response.data.error;
+    if (code === 400) {
+      dispatch(authRequestFailed(generateAuthError(message)));
+    } else {
+      dispatch(authRequestFailed(error.message));
+    }
   }
 };
-
-export const signUp =
-  ({ email, password, ...rest }) =>
-  async (dispatch) => {
-    dispatch(authRequested());
-    try {
-      const data = await authService.registration({ email, password });
-      localStorageService.setToken(data);
-      dispatch(authRequestSuccess({ userId: data.localId }));
-      dispatch(
-        createUser({
-          _id: data.localId,
-          email,
-          rate: getRandomInt(1, 5),
-          completedMeetings: getRandomInt(0, 200),
-          ...rest
-        })
-      );
-    } catch (error) {
-      const { code, message } = error.response.data.error;
-      if (code === 400) {
-        dispatch(authRequestFailed(generateAuthError(message)));
-      } else {
-        dispatch(authRequestFailed(error.message));
-      }
-    }
-  };
 
 export const logIn =
   ({ payload, redirect }) =>
@@ -144,16 +118,9 @@ export const logIn =
     dispatch(authRequested());
     try {
       const data = await authService.login({ email, password });
-      dispatch(authRequestSuccess({ userId: data.localId }));
       localStorageService.setToken(data);
+      dispatch(authRequestSuccess({ userId: data.userId }));
       history.push(redirect);
-      // currentHistory.push("/");
-      // const history = getHistory();
-      // console.log(history);
-      // const redirect = history.location.state
-      //   ? history.location.state.from.pathname
-      //   : "/";
-      // history.push(redirect);
     } catch (error) {
       const { code, message } = error.response.data.error;
       if (code === 400) {

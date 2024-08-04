@@ -11,7 +11,7 @@ const schema = new Schema(
     rate: Number,
     sex: { type: String, enum: ["male", "female"] },
     profession: { type: Schema.Types.ObjectId, ref: "Profession" },
-    qualities: { type: Schema.Types.ObjectId, ref: "Quality" },
+    qualities: [{ type: Schema.Types.ObjectId, ref: "Quality" }],
   },
   {
     timestamps: true,
